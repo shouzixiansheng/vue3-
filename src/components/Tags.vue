@@ -54,6 +54,11 @@ const closeTags = index => {
     delItem.path === route.fullPath && router.push(item.path)
   } else {
     router.push('/')
+    tags.setTagsItem({
+      name: '首页',
+      title: '系统首页',
+      path: '/home'
+    })
   }
 }
 
@@ -91,6 +96,11 @@ watch(
 const closeAll = () => {
   tags.clearTags()
   router.push('/')
+  tags.setTagsItem({
+    name: '首页',
+    title: '系统首页',
+    path: '/home'
+  })
 }
 // 关闭其他标签
 const closeOther = () => {
