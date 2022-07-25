@@ -83,6 +83,7 @@ const route = useRoute()
 const router = useRouter()
 let ActivePath = ref()
 ActivePath.value = route.path
+
 const onRoutes = computed(() => {
   return route.path
 })
@@ -102,6 +103,10 @@ const getPermission = () => {
 }
 
 getPermission()
+
+watch(route, val => {
+  ActivePath.value = route.path
+})
 </script>
 
 <style scoped>

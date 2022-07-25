@@ -1,23 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
 export const asyncRouterMap = [
-//   {
-//     path: '/',
-//     redirect: '/dashboard'
-//   },
-  // {
-  //     path: "/index",
-  //     meta: { title: "首页", role: "首页", icon: "el-icon-home" },
-  //     component: () => import("@/pages/Layout" /* webpackChunkName: 'account' */), // 账号模块
-  //     children: [
-  //       {
-  //         path: "index",
-  //         name: "index",
-  //         meta: { title: "首页", role: "首页", noCache: true },
-  //         component: () => import("@/pages/index" /* webpackChunkName: 'index' */) // 启动页
-  //       }
-  //     ]
-  //   },
   {
     path: '/',
     name: 'Home',
@@ -30,8 +13,7 @@ export const asyncRouterMap = [
         meta: {
           title: '系统首页'
         },
-        component: () =>
-          import('../views/home/index.vue')
+        component: () => import('../views/home/index.vue')
       },
       {
         path: '/user',
@@ -39,44 +21,62 @@ export const asyncRouterMap = [
         meta: {
           title: '个人中心'
         },
-        component: () =>
-          import('@/views/User.vue')
+        component: () => import('@/views/User.vue')
+      }
+    ]
+  },
+  {
+    path: '/test',
+    meta: { title: 'test', role: 'test', icon: 'HomeFilled' },
+    component: () => import('@/views/Layout/index.vue'),
+    children: [
+      {
+        path: '/test',
+        name: 'test',
+        meta: {
+          title: 'test'
+        },
+        component: () => import('../views/test/index.vue')
       }
     ]
   }
 ];
 
 export const constantRouterMap = [
-    {
-        path: '/login',
-        name: 'Login',
-        meta: {
-          title: '登录'
-        },
-        component: () =>
-          import(/* webpackChunkName: "login" */ '../views/Login.vue')
-      },
-      {
-        path: '/404',
-        name: '404',
-        meta: {
-          title: '找不到页面'
-        },
-        component: () => import(/* webpackChunkName: "404" */ '../views/404.vue')
-      },
-      {
-        path: '/403',
-        name: '403',
-        meta: {
-          title: '没有权限'
-        },
-        component: () => import(/* webpackChunkName: "403" */ '../views/403.vue')
-      }
-]
+  {
+    path: '/login',
+    name: 'Login',
+    meta: {
+      title: '登录'
+    },
+    component: () =>
+      import(/* webpackChunkName: "login" */ '../views/Login.vue')
+  },
+  {
+    path: '/404',
+    name: '404',
+    meta: {
+      title: '找不到页面'
+    },
+    component: () => import(/* webpackChunkName: "404" */ '../views/404.vue')
+  },
+  {
+    path: '/403',
+    name: '403',
+    meta: {
+      title: '没有权限'
+    },
+    component: () => import(/* webpackChunkName: "403" */ '../views/403.vue')
+  },
+  {
+    path: '/',
+    redirect: '/home'
+  }
+];
 
 const router = createRouter({
   history: createWebHashHistory(),
-  routes :constantRouterMap.concat(asyncRouterMap)
+  routes: constantRouterMap.concat(asyncRouterMap)
 });
 
 router.beforeEach((to, from, next) => {

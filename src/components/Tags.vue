@@ -34,7 +34,7 @@
 
 <script lang="ts" setup>
 import { useTagsStore } from '../store/tags'
-import { onBeforeRouteUpdate } from 'vue-router'
+import { onBeforeRouteUpdate, onBeforeRouteEnter } from 'vue-router'
 const route = useRoute()
 const router = useRouter()
 const isActive = path => {
@@ -44,6 +44,9 @@ const isActive = path => {
 const tags = useTagsStore()
 // 关闭单个标签
 const closeTags = index => {
+  // if (tags.list.length == 1) {
+  //   return
+  // }
   const delItem = tags.list[index]
   tags.delTagsItem(index)
   const item = tags.list[index] ? tags.list[index] : tags.list[index - 1]
@@ -69,9 +72,20 @@ const setTags = route => {
   }
 }
 setTags(route)
-onBeforeRouteUpdate(to => {
-  setTags(to)
-})
+// onBeforeRouteUpdate
+
+// onBeforeRouteEnter(to => {
+//   console.log(to);
+//   setTags(to)
+// })
+
+watch(
+  route,
+  val => {
+    setTags(val)
+  },
+  { immediate: true }
+)
 
 // 关闭全部标签
 const closeAll = () => {
