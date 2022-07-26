@@ -95,7 +95,9 @@ const getPermission = () => {
   newArr.forEach(item => {
     let arr = []
     item.children.forEach(child => {
-      arr.push(child)
+      if(!child.hidden){
+        arr.push(child)
+      }
     })
     item.children = arr
   })
