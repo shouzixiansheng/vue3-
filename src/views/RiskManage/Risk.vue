@@ -108,7 +108,6 @@ const onSubmit = () => {
 
 .p2 {
   margin-top: 10px;
-
 }
 
 .sp1 {
