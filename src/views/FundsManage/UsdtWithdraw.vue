@@ -6,19 +6,14 @@
           <div style="margin-bottom: 10px">
             <el-form :inline="true" :model="formInline" class="">
               <el-form-item label="用户ID:">
-                <el-input v-model="formInline.user_id" placeholder="输入用户ID"/>
+                <el-input v-model="formInline.uid" placeholder="输入用户ID"/>
               </el-form-item>
               <el-form-item label="状态">
                 <el-select v-model="formInline.status" placeholder="请选择">
-                  <el-option label="等待审核" value="AUDIT_ING"/>
-                  <el-option label="审核失败" value="AUDIT_FAIL"/>
-                  <el-option label="审核成功" value="AUDIT_SUCCESS"/>
-                  <el-option label="交易中" value="AUDIT_ING"/>
-                  <el-option label="交易成功" value="TRADE_SUCCESS"/>
-                  <el-option label="交易失败" value="TRADE_FAIL"/>
+                  <el-option v-for="(v,k) in withdrawStatus" :label="v" :value="k"/>
                 </el-select>
               </el-form-item>
-              <el-form-item label="撤回时间">
+              <el-form-item label="提现时间">
                 <el-date-picker
                     v-model="formInline.time"
                     type="datetimerange"
@@ -40,37 +35,52 @@
         </div>
       </template>
       <div v-loading="loading">
-        <el-table :data="lotteryData" border>
-          <el-table-column label="订单ID" width="230">
+        <el-table :data="withdrawData" border>
+          <el-table-column label="订单号" width="250">
             <template #default="scope">
-              <span class="">{{scope.row.order_id}}</span>
+              <span class="">{{scope.row.sn}}</span>
             </template>
           </el-table-column>
-          <el-table-column label="合伙人ID" width="150">
+          <el-table-column label="创建时间" width="160">
             <template #default="scope">
-              <span class="">{{scope.row.uid}}</span>
+              {{ toTime(dateToTs(scope.row.createTime), 'yyyy-MM-dd HH:mm:ss') }}
             </template>
           </el-table-column>
-          <el-table-column label="撤回数额(USDT)" width="150">
+          <el-table-column label="用户ID" width="150">
             <template #default="scope">
-              {{scope.row.flow_amount}}
+              {{scope.row.uid}}
             </template>
           </el-table-column>
-          <el-table-column label="撤回手续费(USDT)" width="150">
+          <el-table-column label="状态" width="150">
             <template #default="scope">
-              <span>{{scope.row.withdraw_poundage}}</span>
+              <span>{{withdrawStatus[scope.row.status]}}</span>
             </template>
           </el-table-column>
-          <el-table-column label="实际到账(USDT)" width="130">
+          <el-table-column label="提现数额(USDT)" width="130">
             <template #default="scope">
-              <span>{{scope.row.actual_amount}}</span>
+              <span>{{scope.row.amount}}</span>
             </template>
           </el-table-column>
-          <el-table-column label="申请时间" width="120">
+          <el-table-column label="提现手续费(USDT)" width="150">
             <template #default="scope">
               <div>
-                {{ toTime(dateToTs(scope.row.create_time), 'yyyy-MM-dd') }}
+                <span>{{scope.row.fee}}</span>
               </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="实际到账(USDT)" width="150">
+            <template #default="scope">
+              <div>
+                <span>{{scope.row.actualAmount}}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column width="120">
+            <template #header>
+              提现网络
+            </template>
+            <template #default="scope">
+              <span class="">{{scope.row.network}}</span>
             </template>
           </el-table-column>
           <el-table-column width="380">
@@ -78,39 +88,31 @@
               转出地址
             </template>
             <template #default="scope">
-              <span class="">{{scope.row.from_address}}</span>
+              <span class="">{{scope.row.fromAddress}}</span>
             </template>
           </el-table-column>
-          <el-table-column width="380">
-            <template #header>
-              接受地址
-            </template>
+          <el-table-column label="接收地址" width="380">
             <template #default="scope">
-              <span class="">{{scope.row.to_address}}</span>
+              <span class="">{{scope.row.toAddress}}</span>
             </template>
           </el-table-column>
-          <el-table-column label="转账网络" width="100">
+          <el-table-column label="交易哈希" width="380">
             <template #default="scope">
-              <span class="">{{scope.row.transfer_account}}</span>
+              <span class="">{{scope.row.hash}}</span>
             </template>
           </el-table-column>
-          <el-table-column label="状态" width="100">
+          <el-table-column label="到账时间" width="160">
             <template #default="scope">
-              <span v-if="scope.row.agent_margin_status_enum==='WAIT_AUDIT'">等待审核</span>
-              <span v-if="scope.row.agent_margin_status_enum==='AUDIT_FAIL'">审核失败</span>
-              <span v-if="scope.row.agent_margin_status_enum==='AUDIT_SUCCESS'">审核成功</span>
-              <span v-if="scope.row.agent_margin_status_enum==='TRADE_SUCCESS'">交易成功</span>
-              <span v-if="scope.row.agent_margin_status_enum==='TRADE_FAIL'">交易失败</span>
-              <span v-if="scope.row.agent_margin_status_enum==='AUDIT_ING'">交易中</span>
+              <span v-if="scope.row.completeTime!==null">{{ toTime(dateToTs(scope.row.completeTime), 'yyyy-MM-dd HH:mm:ss') }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="120" fixed="right">
+          <el-table-column label="操作" width="140" fixed="right">
             <template #default="scope">
-              <el-button v-if="scope.row.agent_margin_status_enum==='WAIT_AUDIT'" size="small" type="primary" @click="dialogVisible=true; handleResult(scope.$index, scope.row)"
+              <el-button v-if="scope.row.status==='created'" size="small" type="primary" @click="dialogVisible=true; handleResult(scope.$index, scope.row)"
               >审核
               </el-button
               >
-              <el-button v-if="scope.row.agent_margin_status_enum!=='WAIT_AUDIT'" size="small" type="primary" @click="dialogVisible=true; handleResult(scope.$index, scope.row)"
+              <el-button v-if="scope.row.status!=='created'" size="small" type="primary" @click="dialogVisible=true; handleResult(scope.$index, scope.row)"
               >审核记录
               </el-button
               >
@@ -130,56 +132,56 @@
     </el-card>
 
     <el-dialog v-model="dialogVisible" title="审核结果" width="50%" :before-close="handleClose">
-      <div v-if="resultData.status ==='WAIT_AUDIT'">
+      <div v-if="resultData.istatus ==='created'">
         <el-form :model="resultData">
-          <el-form-item label="可撤回保证金：" label-width="120px">
-            <el-input disabled v-model="resultData.expect_deposit" autocomplete="off"/>
+          <el-form-item label="可提现数额：" label-width="120px">
+            <el-input disabled v-model="resultData.actualAmount" autocomplete="off"/>
           </el-form-item>
-          <el-form-item label="撤回数额：" label-width="120px">
-            <el-input disabled v-model="resultData.flow_amount" autocomplete="off"/>
+          <el-form-item label="提现数额：" label-width="120px">
+            <el-input disabled v-model="resultData.amount" autocomplete="off"/>
           </el-form-item>
           <el-form-item label="网络：" label-width="120px">
-            <el-input disabled v-model="resultData.transfer_account" autocomplete="off"/>
+            <el-input disabled v-model="resultData.network" autocomplete="off"/>
           </el-form-item>
-          <el-form-item label="撤回手续费：" label-width="120px">
-            <el-input disabled v-model="resultData.withdraw_poundage" autocomplete="off"/>
+          <el-form-item label="提现手续费：" label-width="120px">
+            <el-input disabled v-model="resultData.fee" autocomplete="off"/>
           </el-form-item>
           <el-form-item label="提示：" label-width="120px">
-            <span>若结算成功则实际到账为 <span style="color: red">{{resultData.actual_amount}}</span> USDT</span>
+            <span>若结算成功则实际到账为 <span style="color: red">{{resultData.actualAmount}}</span> USDT</span>
           </el-form-item>
           <el-form-item label="*审核：" label-width="120px">
-            <el-select v-model="resultData.agent_margin_status_enum" placeholder="请选择">
-              <el-option label="等待审核" value="WAIT_AUDIT"/>
-              <el-option label="审核失败" value="AUDIT_FAIL"/>
-              <el-option label="审核成功" value="AUDIT_SUCCESS"/>
+            <el-select v-model="resultData.status" placeholder="请选择">
+              <el-option label="等待审核" value="created"/>
+              <el-option label="审核失败" value="review_fail"/>
+              <el-option label="审核成功" value="review_success"/>
             </el-select>
           </el-form-item>
           <el-form-item label="备注：" label-width="120px">
             <el-input :autosize="{ minRows: 2, maxRows: 4 }"
                       type="textarea"
-                      v-model="resultData.remark" autocomplete="off"/>
+                      v-model="resultData.note" autocomplete="off"/>
           </el-form-item>
         </el-form>
       </div>
-      <div v-if="resultData.status !=='WAIT_AUDIT'">
+      <div v-if="resultData.istatus !=='created'">
         <el-form :model="resultData">
           <el-form-item label="审核结果：" label-width="120px">
-            <span v-if="resultData.agent_margin_status_enum==='AUDIT_FAIL'">审核失败</span>
-            <span v-if="resultData.agent_margin_status_enum!=='AUDIT_FAIL'">审核成功</span>
+            <span v-if="resultData.status==='review_fail'">审核失败</span>
+            <span v-if="resultData.status!=='review_fail'">审核成功</span>
           </el-form-item>
           <el-form-item label="备注：" label-width="120px">
             <el-input :autosize="{ minRows: 2, maxRows: 4 }"
                       disabled
                       type="textarea"
-                      v-model="resultData.remark" autocomplete="off"/>
+                      v-model="resultData.note" autocomplete="off"/>
           </el-form-item>
         </el-form>
       </div>
       <template #footer>
       <span class="dialog-footer">
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button v-if="resultData.status !=='WAIT_AUDIT'" @click="dialogVisible = false">确认</el-button>
-        <el-button v-if="resultData.status ==='WAIT_AUDIT'" type="primary" @click="handleSubmit"
+        <el-button v-if="resultData.istatus !=='created'" @click="dialogVisible = false">确认</el-button>
+        <el-button v-if="resultData.istatus ==='created'" type="primary" @click="handleSubmit"
         >确认</el-button
         >
       </span>
@@ -194,18 +196,20 @@
 import {dateToTs, format as toTime, parseTo} from "../../utils/public";
 import {reactive, ref} from "vue";
 import {ElMessage} from "element-plus";
+import * as service from '../../api/funds'
+
 
 const loading = ref(false)
-const lotteryData = ref([])
+const withdrawData = ref([])
 const resultData = ref({
-  id: '',
-  agent_margin_status_enum: '',
-  flow_amount: '',
-  transfer_account: '',
-  remark: '',
-  withdraw_poundage	: '',
-  actual_amount: '',
   status: '',
+  istatus: '',
+  id: '',
+  note: '',
+  actualAmount: '',
+  network: '',
+  amount: '',
+  fee: '',
 })
 const dialogVisible = ref(false)
 const pagination = reactive({
@@ -215,28 +219,28 @@ const pagination = reactive({
 })
 
 const formInline = reactive({
-  user_id: '',
+  uid: '',
   time: '',
   status: ''
 })
 
-// const getWithdrawAuthList = (param_) => {
-//   loading.value = true
-//   service.getWithdrawAuthList(param_).then(res => {
-//     lotteryData.value = res.agentWithdrawDTOS
-//     pagination.page_count = res.count
-//     loading.value = false
-//   })
-// }
+const getUsdtWithdrawalList = (param_) => {
+  loading.value = true
+  service.getUsdtWithdrawalList(param_).then(res => {
+    withdrawData.value = res.items
+    pagination.page_count = res.count
+    loading.value = false
+  })
+}
 
 let params = {
   page: 1,
   size: 20
 }
-// getWithdrawAuthList(params)
+getUsdtWithdrawalList(params)
 
 const onSubmit = () => {
-  lotteryData.value = []
+  withdrawData.value = []
   let start_time;
   let end_time;
   pagination.currentPage = 1
@@ -247,16 +251,16 @@ const onSubmit = () => {
   if (formInline.time != null && formInline.time.length === 2) {
     start_time = toTime(dateToTs(formInline.time[0]), 'yyyy-MM-dd')
     end_time = toTime(dateToTs(formInline.time[1]), 'yyyy-MM-dd')
-    params.start_time = start_time
-    params.end_time = end_time
+    params.startTime = start_time
+    params.endTime = end_time
   }
-  if (formInline.partner_id.length !== 0){
-    params.uid = formInline.partner_id
+  if (formInline.uid.length !== 0){
+    params.uid = formInline.uid
   }
   if (formInline.status.length !== 0){
-    params.marginStatusEnum = formInline.status
+    params.status = formInline.status
   }
-  // getWithdrawAuthList(params)
+  getUsdtWithdrawalList(params)
 }
 
 
@@ -266,20 +270,20 @@ const onReset = () => {
     page: 1,
     size: 20
   }
-  formInline.partner_id = ''
+  formInline.uid = ''
   formInline.time = ''
   formInline.status = ''
 }
 
 const handleResult = (index, row) => {
   resultData.value.id = row.id
-  resultData.value.remark = row.remark
-  resultData.value.actual_amount = row.actual_amount
-  resultData.value.status = row.agent_margin_status_enum
-  resultData.value.agent_margin_status_enum = row.agent_margin_status_enum
-  resultData.value.flow_amount = row.flow_amount
-  resultData.value.transfer_account = row.transfer_account
-  resultData.value.withdraw_poundage = row.withdraw_poundage
+  resultData.value.note = row.note
+  resultData.value.actualAmount = row.actualAmount
+  resultData.value.status = row.status
+  resultData.value.istatus = row.status
+  resultData.value.amount = row.amount
+  resultData.value.network = row.network
+  resultData.value.fee = row.fee
 }
 
 const handleClose = () => {
@@ -291,21 +295,37 @@ const onResultSubmit = () => {
 }
 
 const handleSubmit = () => {
-  // service.postAgentMarginAuth({id: resultData.value.id, agent_margin_status_enum: resultData.value.agent_margin_status_enum, remark: resultData.value.remark}).then(res => {
-  //   if (res ==='审核成功'){
-  //     ElMessage({
-  //       message: '审核成功！！！',
-  //       type: 'success',
-  //     })
-  //   }
-    // getWithdrawAuthList(params)
+  let result;
+  if (resultData.value.status === 'review_success') {
+    result = true
+  }
+  if (resultData.value.status === 'review_fail') {
+    result = false
+  }
+  service.postUsdtWithdrawalAudit({id: resultData.value.id, result: result, note: resultData.value.note}).then(res => {
+    if (res === null){
+      ElMessage({
+        message: '审核成功！！！',
+        type: 'success',
+      })
+    }
+    getUsdtWithdrawalList(params)
     dialogVisible.value = false
-  // })
+  })
 }
 
 const handleProfitCurrentChange = (val) => {
   params.page = val
-  // getWithdrawAuthList(params)
+  getUsdtWithdrawalList(params)
+}
+
+let withdrawStatus = {
+  created: '新创建/待审核',
+  review_fail: '审核失败',
+  review_success: '审核成功',
+  withdrawing: '提现中',
+  withdraw_fail: '提现失败',
+  withdraw_success: '提现成功',
 }
 </script>
 

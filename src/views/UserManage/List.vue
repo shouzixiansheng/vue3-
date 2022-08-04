@@ -7,10 +7,10 @@
           <el-form :inline="true" :model="formInline" class="">
             <el-form-item label="用户搜索:" style="margin-right: 30px">
               <span>
-                <el-select v-model="formInline.type" placeholder="请选择" style="width: 70px">
-                <el-option label="ID" value="ID"/>
-                <el-option label="等于0" value="0"/>
-                <el-option label="小于0" value="-1"/>
+                <el-select v-model="formInline.type" placeholder="请选择" style="width: 90px">
+                <el-option label="ID" value="uid"/>
+                <el-option label="手机号" value="mobile"/>
+                <el-option label="邮箱" value="email"/>
               </el-select>
               </span>
               <span>
@@ -46,35 +46,35 @@
         <el-table-column label="用户ID">
           <template #default="scope">
             <div>
-              <span style="margin-right: 20px">{{ scope.row.id }}</span>
+              <span style="margin-right: 20px">{{ scope.row.userId }}</span>
             </div>
           </template>
         </el-table-column>
         <el-table-column label="注册时间" width="180">
           <template #default="scope">
             <div>
-              <span style="">{{ toTime(scope.row.create_time, 'yyyy-MM-dd HH:mm:ss') }}</span>
+              <span style="">{{ toTime(scope.row.createTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
             </div>
           </template>
         </el-table-column>
         <el-table-column label="邮箱号">
           <template #default="scope">
             <div>
-              <span style="">{{ scope.row.username }}</span>
+              <span style="">{{ scope.row.email }}</span>
             </div>
           </template>
         </el-table-column>
         <el-table-column label="手机号">
           <template #default="scope">
             <div>
-              <span style="">{{ scope.row.agent_id }}</span>
+              <span style="">{{ scope.row.mobile }}</span>
             </div>
           </template>
         </el-table-column>
         <el-table-column label="昵称">
           <template #default="scope">
             <div>
-              <span style="">{{ scope.row.agent_id }}</span>
+              <span style="">{{ scope.row.nickName }}</span>
             </div>
           </template>
         </el-table-column>
@@ -88,14 +88,14 @@
         <el-table-column label="国家">
           <template #default="scope">
             <div>
-              <span style="">{{ scope.row.agent_id }}</span>
+              <span style="">{{ scope.row.country }}</span>
             </div>
           </template>
         </el-table-column>
         <el-table-column label="总资产(USDT)">
           <template #default="scope">
             <div>
-              <span style="margin-right: 20px">{{ scope.row.available_balance }}</span>
+              <span style="margin-right: 20px">{{ scope.row.actualAmount }}</span>
             </div>
           </template>
         </el-table-column>
@@ -104,7 +104,7 @@
             <div>
               <span style="margin-right: 20px">
                 <el-switch
-                    v-model="scope.row.active"
+                    v-model="scope.row.userStatus"
                     size="large"
                     inline-prompt
                     active-text="可用"
@@ -145,9 +145,10 @@
 <script lang="ts" setup>
 import { reactive, ref} from "vue";
 import {dateToTs, format as toTime, parseTo, toClipboard} from "../../utils/public";
+import * as service from '../../api/user'
 
 const formInline = reactive({
-  type: 'ID',
+  type: 'uid',
   user: '',
   time: '',
   agent: ''
@@ -158,30 +159,87 @@ const pagination = reactive({
   page_count: 15
 })
 const userData = ref([])
-userData.value.push({id: 1, create_time: '2022-07-25T14:16:51.051066'})
 const loading = ref(false)
+
+let userParam = {
+  page: 1,
+  size: pagination.pageSize
+}
+
+const getUserQuery = (param_) => {
+  loading.value = true
+  service.getUserQuery(param_).then(res => {
+    userData.value = res.items
+    pagination.page_count = res.total
+    loading.value = false
+  })
+}
+
+getUserQuery(userParam)
+
 const onSubmit = () => {
-  console.log(1)
+  if (formInline.user.length !== 0){
+    if (formInline.type === 'uid'){
+      userParam.uid = formInline.user
+    }
+    if (formInline.type === 'mobile'){
+      userParam.mobile = formInline.user
+    }
+    if (formInline.type === 'email'){
+      userParam.email = formInline.user
+    }
+  }
+  if (formInline.agent.length !== 0){
+    userParam.invite_user = formInline.agent
+  }
+  let start_time;
+  let end_time;
+  if (formInline.time != null && formInline.time.length === 2) {
+    start_time = toTime(dateToTs(formInline.time[0]), 'yyyy-MM-dd')
+    end_time = toTime(dateToTs(formInline.time[1]), 'yyyy-MM-dd')
+    userParam.start_time = start_time
+    userParam.end_time = end_time
+  }
+  getUserQuery(userParam)
 }
 const onReset = () => {
-  console.log(2)
+  formInline.time = ''
+  formInline.type = 'uid'
+  formInline.user = ''
+  formInline.agent = ''
+  userParam = {
+    page: 1,
+    size: pagination.pageSize
+  }
 }
 
 const isBan = (index, row) => {
-  console.log(row)
+  service.postUpdateUserStatus({uid: row.id, status: row.userStatus}).then(res => {
+    getUserQuery(userParam)
+  })
 }
 
 const handleCurrentChange = (val) => {
-  console.log(val)
+  userParam.page = val
+  getUserQuery(userParam)
 }
 
 const router = useRouter()
 const handleDetail = (index, row) => {
+  let myCurrency = {}
+  for (const currenciesKey in row.currencies) {
+    for (const key in row.currencies[currenciesKey]){
+      if (key === 'balance' || key === 'freeze' || key === 'remain') {
+        myCurrency[row.currencies[currenciesKey].currencyType + '_' + key] = row.currencies[currenciesKey][key]
+      }
+    }
+  }
+  for (const currencyKey in myCurrency) {
+    row[currencyKey] = myCurrency[currencyKey]
+  }
   router.push({
     path: '/user/detail',
-    query: {
-      'address': row.id,
-    }
+    query: row
   })
 }
 

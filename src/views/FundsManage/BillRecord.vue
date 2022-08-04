@@ -7,8 +7,22 @@
             <el-form :inline="true" :model="formInline" class="">
               <el-form-item label="用户搜索:" style="margin-right: 30px">
               <span>
-                <el-input v-model="formInline.user" placeholder="请输入搜索内容" style="width: 150px"/>
+                <el-input v-model="formInline.user" placeholder="请输入用户ID" style="width: 150px"/>
               </span>
+              </el-form-item>
+              <el-form-item label="账单类型:">
+                <el-select v-model="formInline.business" placeholder="请选择">
+                  <el-option v-for="(val, key) in business" :label="val" :value="key"/>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="创建时间">
+                <el-date-picker
+                    v-model="formInline.time"
+                    type="datetimerange"
+                    range-separator="To"
+                    start-placeholder="Start date"
+                    end-placeholder="End date"
+                />
               </el-form-item>
               <div style="text-align: end">
                 <el-form-item>
@@ -23,46 +37,61 @@
         </div>
       </template>
       <div v-loading="loading">
+        <div>
+          <el-descriptions
+              class="margin-top"
+              :column="1"
+          >
+<!--            <el-descriptions-item>-->
+<!--              <template #label>-->
+<!--                <span class="small-title">销售额：</span>-->
+<!--              </template>-->
+<!--              <span>-->
+<!--                  1000-->
+<!--                </span>-->
+<!--            </el-descriptions-item>-->
+          </el-descriptions>
+        </div>
         <el-table :data="phoneData" border>
-          <el-table-column label="订单号">
+          <el-table-column label="订单ID">
             <template #default="scope">
               <div>
-                <span style="margin-right: 20px">{{ scope.row.id }}</span>
+                <span style="margin-right: 20px">{{ scope.row.sn }}</span>
               </div>
             </template>
           </el-table-column>
           <el-table-column label="创建时间" width="180">
             <template #default="scope">
               <div>
-                <span style="">{{ toTime(scope.row.create_time, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                <span style="">{{ toTime(scope.row.createTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
               </div>
             </template>
           </el-table-column>
           <el-table-column label="用户ID">
             <template #default="scope">
               <div>
-                <span style="">{{ scope.row.username }}</span>
+                <span style="">{{ scope.row.uid }}</span>
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="类别">
+          <el-table-column label="类型">
             <template #default="scope">
               <div>
-                <span style="">{{ scope.row.agent_id }}</span>
+                <span style="">{{ business[scope.row.business] }}</span>
               </div>
             </template>
           </el-table-column>
           <el-table-column label="说明">
             <template #default="scope">
               <div>
-                <span style="">{{ scope.row.agent_id }}</span>
+                <span style="">{{ scope.row.des }}</span>
               </div>
             </template>
           </el-table-column>
           <el-table-column label="金额">
             <template #default="scope">
               <div>
-                <span style="">{{ scope.row.agent_id }}</span>
+                <span style="">{{ scope.row.amount }} {{scope.row.currencyType}}</span>
               </div>
             </template>
           </el-table-column>
@@ -85,6 +114,7 @@
 <script lang="ts" setup>
 import {reactive, ref} from "vue";
 import {dateToTs, format as toTime, parseTo, toClipboard} from "../../utils/public";
+import * as service from '../../api/funds'
 
 const pagination = reactive({
   currentPage: 1,
@@ -92,21 +122,74 @@ const pagination = reactive({
   page_count: 15
 })
 const formInline = ref({
-  user: ''
+  user: '',
+  business: '',
+  time: ''
 })
 const loading = ref(false)
 
 const phoneData = ref([])
 
+let currencyParam = {
+  page: 1,
+  size: pagination.pageSize
+}
+
+const getCurrencyList = (param_) => {
+  loading.value = true
+  service.getCurrencyList(param_).then(res => {
+    phoneData.value = res.items
+    pagination.page_count = res.total
+    loading.value = false
+  })
+}
+
+getCurrencyList(currencyParam)
+
 const onSubmit = () => {
-  console.log(1)
+  let start_time;
+  let end_time;
+  if (formInline.value.time != null && formInline.value.time.length === 2) {
+    start_time = toTime(dateToTs(formInline.value.time[0]), 'yyyy-MM-dd')
+    end_time = toTime(dateToTs(formInline.value.time[1]), 'yyyy-MM-dd')
+    currencyParam.startTime = start_time
+    currencyParam.endTime = end_time
+  }
+  if (formInline.value.user.length !== 0){
+    currencyParam.uid = formInline.value.user
+  }
+  if (formInline.value.business.length !== 0){
+    currencyParam.business = formInline.value.business
+  }
+  getCurrencyList(currencyParam)
 }
 const onReset = () => {
-  console.log(2)
+  currencyParam = {
+    page: 1,
+    size: pagination.pageSize
+  }
+  formInline.value.user = ''
+  formInline.value.business = ''
+  formInline.value.time = ''
 }
 
 const handleCurrentChange = (val) => {
-  console.log(val)
+  currencyParam.page = val
+  getCurrencyList(currencyParam)
+}
+
+let business = {
+  TRANSFER:'转账',
+  RECHARGE:'充值',
+  U_WITHDRAW:'U币提现',
+  FLAT_MONEY:'法币提现',
+  APP_EXCHANGE:'平台闪兑',
+  MARKET_EXCHANGE:'市场汇兑',
+  WATER_BILLS_PAY:'水费缴纳',
+  ELECTRICITY_BILLS_PAY:'电费缴纳',
+  GAS_BILLS_PAY:'燃气费缴纳',
+  PREPAID_RECHARGE:'话费充值',
+  GO_SHOPPING:'商城购物',
 }
 </script>
 

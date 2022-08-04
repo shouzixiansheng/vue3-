@@ -7,8 +7,17 @@
             <el-form :inline="true" :model="formInline" class="">
               <el-form-item label="用户搜索:" style="margin-right: 30px">
               <span>
-                <el-input v-model="formInline.uid" placeholder="请输入用户ID" style="width: 150px"/>
+                <el-input v-model="formInline.name" placeholder="请输入用户ID" style="width: 150px"/>
               </span>
+              </el-form-item>
+              <el-form-item label="创建时间">
+                <el-date-picker
+                    v-model="formInline.time"
+                    type="datetimerange"
+                    range-separator="To"
+                    start-placeholder="Start date"
+                    end-placeholder="End date"
+                />
               </el-form-item>
               <div style="text-align: end">
                 <el-form-item>
@@ -23,8 +32,8 @@
         </div>
       </template>
       <div v-loading="loading">
-        <el-table :data="rechargeData" border>
-          <el-table-column label="订单号" width="260">
+        <el-table :data="transferData" border>
+          <el-table-column label="订单号">
             <template #default="scope">
               <div>
                 <span style="margin-right: 20px">{{ scope.row.sn }}</span>
@@ -38,52 +47,59 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="用户ID" width="150">
+          <el-table-column label="类型">
+            <template #default="scope">
+              <div>
+                <span style="">{{transferType[scope.row.transferType]}}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="币种">
+            <template #default="scope">
+              <div>
+                <span style="">{{ scope.row.currencyType }}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="金额">
+            <template #default="scope">
+              <div>
+                <span style="">{{ scope.row.amount }} {{scope.row.currencyType}}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="转出账号ID">
             <template #default="scope">
               <div>
                 <span style="">{{ scope.row.uid }}</span>
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="金额(USDT)" width="100">
+          <el-table-column label="转出账号名">
             <template #default="scope">
               <div>
-                <span style="">{{ scope.row.amount }}</span>
+                <span style="">{{ scope.row.nickName }}</span>
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="状态" width="100">
+          <el-table-column label="转入账号ID">
             <template #default="scope">
               <div>
-                <span style="">成功</span>
+                <span style="">{{ scope.row.otherUid }}</span>
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="网络" width="100">
+          <el-table-column label="转入账号名">
             <template #default="scope">
               <div>
-                <span style="">{{ scope.row.network }}</span>
+                <span style="">{{ scope.row.otherNickName }}</span>
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="转出地址" width="200">
+          <el-table-column label="备注">
             <template #default="scope">
               <div>
-                <span style="">{{ scope.row.fromAddress }}</span>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="接收地址" width="200">
-            <template #default="scope">
-              <div>
-                <span style="">{{ scope.row.toAddress }}</span>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="交易哈希" width="290">
-            <template #default="scope">
-              <div>
-                <span style="">{{ scope.row.hash }}</span>
+                <span style="">{{ scope.row.remark }}</span>
               </div>
             </template>
           </el-table-column>
@@ -100,6 +116,7 @@
       </div>
     </el-card>
   </div>
+
 </template>
 
 <script lang="ts" setup>
@@ -113,44 +130,61 @@ const pagination = reactive({
   page_count: 15
 })
 const formInline = ref({
-  uid: ''
+  name: '',
+  time: ''
 })
 const loading = ref(false)
 
-const rechargeData = ref([])
+const transferData = ref([])
 
-let rechargeParam = {
+let transferParam = {
   page: 1,
   size: pagination.pageSize
 }
 
-const getCurrencyList = (param_) => {
+const getTransferList = (param_) => {
   loading.value = true
-  service.getRechargeList(param_).then(res => {
-    rechargeData.value = res.items
+  service.getTransferList(param_).then(res => {
+    transferData.value = res.items
     pagination.page_count = res.total
     loading.value = false
   })
 }
-getCurrencyList(rechargeParam)
+
+getTransferList(transferParam)
 
 const onSubmit = () => {
-  if (formInline.value.uid.length !== 0) {
-    rechargeParam.uid = formInline.value.uid
+  let start_time;
+  let end_time;
+  if (formInline.value.time != null && formInline.value.time.length === 2) {
+    start_time = toTime(dateToTs(formInline.value.time[0]), 'yyyy-MM-dd')
+    end_time = toTime(dateToTs(formInline.value.time[1]), 'yyyy-MM-dd')
+    transferParam.startTime = start_time
+    transferParam.endTime = end_time
   }
-  getCurrencyList(rechargeParam)
+  if (formInline.value.name.length !== 0){
+    transferParam.name = formInline.value.name
+  }
+
+  getTransferList(transferParam)
 }
 const onReset = () => {
-  rechargeParam = {
+  transferParam = {
     page: 1,
     size: pagination.pageSize
   }
-  formInline.value.uid = ''
+  formInline.value.name = ''
+  formInline.value.time = ''
 }
 
 const handleCurrentChange = (val) => {
-  rechargeParam.page = val
-  getCurrencyList(rechargeParam)
+  transferParam.page = val
+  getTransferList(transferParam)
+}
+
+let transferType = {
+  TRANSFER: '转账',
+  SCAN_CODE: '扫码',
 }
 </script>
 

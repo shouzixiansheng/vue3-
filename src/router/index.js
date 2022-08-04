@@ -15,14 +15,14 @@ export const asyncRouterMap = [
         },
         component: () => import('../views/home/index.vue')
       },
-      {
-        path: '/user',
-        name: 'user',
-        meta: {
-          title: '个人中心'
-        },
-        component: () => import('@/views/User.vue')
-      }
+      // {
+      //   path: '/user',
+      //   name: 'user',
+      //   meta: {
+      //     title: '个人中心'
+      //   },
+      //   component: () => import('@/views/User.vue')
+      // }
     ]
   },
   {
@@ -67,7 +67,7 @@ export const asyncRouterMap = [
   },
   {
     path: '/funds/recharge',
-    meta: { title: '资金管理', role: '资金管理', icon: 'Money' },
+    meta: { title: '数据中心', role: '数据中心', icon: 'Money' },
     component: () => import('@/views/Layout/index.vue'),
     children: [
       {
@@ -87,12 +87,36 @@ export const asyncRouterMap = [
         component: () => import('../views/FundsManage/UsdtWithdraw.vue')
       },
       {
+        path: '/funds/fiat_withdraw',
+        name: 'fiat_withdraw',
+        meta: {
+          title: '法币提现记录'
+        },
+        component: () => import('../views/FundsManage/FiatWithdraw.vue')
+      },
+      {
         path: '/funds/bill',
         name: 'funds_bill',
         meta: {
-          title: '账单记录'
+          title: '用户账单记录'
         },
         component: () => import('../views/FundsManage/BillRecord.vue')
+      },
+      {
+        path: '/funds/transfer',
+        name: 'transfer',
+        meta: {
+          title: '转账记录'
+        },
+        component: () => import('../views/FundsManage/Transfer.vue')
+      },
+      {
+        path: '/funds/express_xchange',
+        name: 'express_xchange',
+        meta: {
+          title: '平台闪兑记录'
+        },
+        component: () => import('../views/FundsManage/ExpressExchange.vue')
       },
     ]
   },
@@ -108,6 +132,14 @@ export const asyncRouterMap = [
           title: '风控配置'
         },
         component: () => import('../views/RiskManage/Risk.vue')
+      },
+      {
+        path: '/risk/recycle',
+        name: 'risk_recycle',
+        meta: {
+          title: '归集管理'
+        },
+        component: () => import('../views/RiskManage/Recycle.vue')
       },
     ]
   },
@@ -155,6 +187,8 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   document.title = `${to.meta.title} | vue-manage-system`;
   const role = localStorage.getItem('ms_username');
+  const xToken = localStorage.getItem('token')
+  console.log(!xToken)
   if (!role && to.path !== '/login') {
     next('/login');
   } else if (to.meta.permission) {

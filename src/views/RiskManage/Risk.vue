@@ -33,7 +33,7 @@
                 >
                   <el-descriptions-item v-for="(data,index) in exchange_data">
                     <template #label>
-                      {{ data.key }}:
+                      {{ data.key }}(%):
                     </template>
                     <span>
                       <el-input v-model="exchange_data[index].val" placeholder="请输入" style="width: 150px"/>
@@ -57,6 +57,8 @@
 import {reactive, ref} from "vue";
 import {dateToTs, format as toTime, parseTo, toClipboard} from "../../utils/public";
 import {ElMessage} from "element-plus";
+import * as service from '../../api/risk'
+
 
 const withdraw_data = reactive([
   {
@@ -83,16 +85,69 @@ const withdraw_data = reactive([
 
 const exchange_data = reactive([
   {
-    key: '平台闪兑手续费',
+    key: '美元/USDT溢价',
+    val: '',
+  },
+  {
+    key: '美元/人民币溢价',
+    val: '',
+  },
+  {
+    key: '美元/泰铢溢价',
+    val: '',
+  },
+  {
+    key: 'USDT/人民币溢价',
+    val: '',
+  },
+  {
+    key: 'USDT/泰铢溢价',
+    val: '',
+  },
+  {
+    key: '泰铢/人民币溢价',
     val: '',
   },
 ])
 
+const getRiskConfig = () => {
+  service.getRiskConfig().then(res => {
+    withdraw_data[0].val = res.usdtWithdrawalDailyLimit
+    withdraw_data[2].val = res.usdtWithdrawalFixedFee
+    withdraw_data[4].val = res.usdtWithdrawalAuditAmount
+    exchange_data[1].val = res.usdCnyFloat * 100
+    exchange_data[2].val = res.usdThbFloat * 100
+    exchange_data[0].val = res.usdUsdtFloat * 100
+    exchange_data[3].val = res.usdtCnyFloat * 100
+    exchange_data[4].val = res.usdtThbFloat * 100
+    exchange_data[5].val = res.thbCnyFloat * 100
+  })
+}
+
+getRiskConfig()
+
 const onSubmit = () => {
-    ElMessage({
-      message: '设置成功！！！',
-      type: 'success',
-    })
+  let _exchange_data = exchange_data
+  let param = {
+    usdtWithdrawalDailyLimit: withdraw_data[0].val,
+    usdtWithdrawalFixedFee: withdraw_data[2].val,
+    usdtWithdrawalAuditAmount: withdraw_data[4].val,
+    usdCnyFloat: _exchange_data[1].val / 100,
+    usdThbFloat: _exchange_data[2].val / 100,
+    usdUsdtFloat: _exchange_data[0].val / 100,
+    usdtCnyFloat: _exchange_data[3].val / 100,
+    usdtThbFloat: _exchange_data[4].val / 100,
+    thbCnyFloat: _exchange_data[5].val / 100,
+  }
+  service.postRiskConfigUpdate(param).then(res => {
+    if (res === null) {
+      ElMessage({
+        message: '设置成功！！！',
+        type: 'success',
+      })
+      getRiskConfig()
+    }
+  })
 }
 
 

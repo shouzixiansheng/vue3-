@@ -21,17 +21,26 @@
             type="password"
             placeholder="password"
             v-model="param.password"
-            @keyup.enter="submitForm()"
           >
             <template #prepend>
               <el-button icon="el-icon-lock"></el-button>
             </template>
           </el-input>
         </el-form-item>
+
+        <el-form-item prop="captcha">
+          <el-input v-model="param.code" placeholder="captcha" @keyup.enter="submitForm()">
+            <template #prepend>
+              <el-button icon="el-icon-chat-square"></el-button>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="captcha">
+          <el-image src="/api/captcha/code?width=200&height=300" fit="fill" />
+        </el-form-item>
         <div class="login-btn">
           <el-button type="primary" @click="submitForm()">登录</el-button>
         </div>
-        <p class="login-tips">Tips : 用户名和密码随便填。</p>
       </el-form>
     </div>
   </div>
@@ -40,11 +49,15 @@
 <script lang="ts" setup>
 import { useTagsStore } from '../store/tags'
 import { ElMessage } from 'element-plus'
+import * as service from '../api/login'
+import { globalStore } from '../store/global'
 
+let mytoken = globalStore()
 const router = useRouter()
 const param = reactive({
-  username: 'admin',
-  password: '123123'
+  username: '_admin',
+  password: 'aa111111',
+  code: ''
 })
 
 const rules = {
@@ -59,15 +72,10 @@ const rules = {
 }
 const login = ref(null)
 const submitForm = () => {
-  login.value.validate(valid => {
-    if (valid) {
-      ElMessage.success('登录成功')
-      localStorage.setItem('ms_username', param.username)
-      router.push('/')
-    } else {
-      ElMessage.error('登录成功')
-      return false
-    }
+  service.postLogin(param).then(res => {
+    localStorage.setItem("ms_username", param.username);
+    mytoken.setToken(res.token)
+    router.push("/");
   })
 }
 

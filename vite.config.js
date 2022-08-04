@@ -10,6 +10,15 @@ export default {
       dts: 'src/auto-import.d.ts' // 生成 `auto-import.d.ts` 全局声明
     })
   ],
+  server: {
+    host: "0.0.0.0",
+    open: '',
+    hmr: true,
+    proxy: { // 代理配置
+      // '/api': 'http://172.16.8.99:8080',
+      '/api': 'http://huiwang.dyproapp.click',
+    },
+  },
   resolve:{
     //设置路径别名
     alias: {

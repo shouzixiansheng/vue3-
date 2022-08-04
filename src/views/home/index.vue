@@ -138,6 +138,7 @@
 import Schart from 'vue-schart'
 const name = localStorage.getItem('ms_username')
 const role = name === 'admin' ? '超级管理员' : '普通用户'
+import { globalStore } from '../../store/global'
 
 const data = reactive([
   {

@@ -27,35 +27,35 @@
           <el-table-column label="国家">
             <template #default="scope">
               <div>
-                <span style="margin-right: 20px">{{ scope.row.id }}</span>
+                <span style="margin-right: 20px">{{ scope.row.country }}</span>
               </div>
             </template>
           </el-table-column>
           <el-table-column label="手机号">
             <template #default="scope">
               <div>
-                <span style="margin-right: 20px">{{ scope.row.id }}</span>
+                <span style="margin-right: 20px">{{ scope.row.mobile }}</span>
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="发送时间" width="180">
+          <el-table-column label="发送时间">
             <template #default="scope">
               <div>
-                <span style="">{{ toTime(scope.row.create_time, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                <span style="">{{ toTime(scope.row.createTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
               </div>
             </template>
           </el-table-column>
           <el-table-column label="验证码">
             <template #default="scope">
               <div>
-                <span style="">{{ scope.row.username }}</span>
+                <span style="">{{ scope.row.verifyCode }}</span>
               </div>
             </template>
           </el-table-column>
           <el-table-column label="状态">
             <template #default="scope">
               <div>
-                <span style="">{{ scope.row.agent_id }}</span>
+                <span style="">{{ verifyCodeStatus[scope.row.verifyCodeStatusEnum] }}</span>
               </div>
             </template>
           </el-table-column>
@@ -77,6 +77,7 @@
 <script lang="ts" setup>
 import {reactive, ref} from "vue";
 import {dateToTs, format as toTime, parseTo, toClipboard} from "../../utils/public";
+import * as service from '../../api/user'
 
 const pagination = reactive({
   currentPage: 1,
@@ -89,16 +90,48 @@ const formInline = ref({
 const loading = ref(false)
 
 const phoneData = ref([])
+let verifyParam = {
+  page: 1,
+  size: pagination.pageSize,
+  code_type: 'MOBILE'
+}
+
+const getVerifyCodeAdminQuery = (param_) => {
+  loading.value = true
+  service.getVerifyCodeAdminQuery(param_).then(res => {
+    phoneData.value = res.items
+    pagination.page_count = res.total
+    loading.value = false
+  })
+}
+
+getVerifyCodeAdminQuery(verifyParam)
 
 const onSubmit = () => {
-  console.log(1)
+  if (formInline.value.phone.length !== 0){
+    verifyParam.mobile = formInline.value.phone
+  }
+  getVerifyCodeAdminQuery(verifyParam)
 }
 const onReset = () => {
-  console.log(2)
+  formInline.value.phone = ''
+  verifyParam = {
+    page: 1,
+    size: pagination.pageSize,
+    code_type: 'EMAIL'
+  }
 }
 
 const handleCurrentChange = (val) => {
-  console.log(val)
+  verifyParam.page = val
+  getVerifyCodeAdminQuery(verifyParam)
+}
+
+let verifyCodeStatus = {
+  accept_success: '接收成功',
+  accept_fail: '接收失败',
+  send_success: '发送成功',
+  send_fail: '发送失败'
 }
 </script>
 
