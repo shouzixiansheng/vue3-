@@ -58,7 +58,7 @@
           <el-table-column label="创建时间" width="180">
             <template #default="scope">
               <div>
-                <span style="">{{ toTime(scope.row.createTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                <span style="">{{ tsToDate(scope.row.createTime) }}</span>
               </div>
             </template>
           </el-table-column>
@@ -128,7 +128,7 @@
 
 <script lang="ts" setup>
 import {reactive, ref} from "vue";
-import {dateToTs, format as toTime, parseTo, toClipboard} from "../../utils/public";
+import {dateToTs, format as toTime, parseTo, toClipboard, tsToDate} from "../../utils/public";
 import * as service from '../../api/funds'
 
 const pagination = reactive({
@@ -164,8 +164,8 @@ const onSubmit = () => {
   let start_time;
   let end_time;
   if (formInline.value.time != null && formInline.value.time.length === 2) {
-    start_time = toTime(dateToTs(formInline.value.time[0]), 'yyyy-MM-dd')
-    end_time = toTime(dateToTs(formInline.value.time[1]), 'yyyy-MM-dd')
+    start_time = dateToTs(formInline.value.time[0])
+    end_time = dateToTs(formInline.value.time[1])
     expressParam.startTime = start_time
     expressParam.endTime = end_time
   }

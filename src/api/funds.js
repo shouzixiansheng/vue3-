@@ -55,6 +55,13 @@ export const getFlatMoneyWithdrawalList = query => {
         params: query
     });
 };
+export const getUserAddressList = query => {
+    return request({
+        url: '/api/adminUserAddress/queryList',
+        method: 'get',
+        params: query
+    });
+};
 export const getAddressCollectionList = query => {
     return request({
         url: '/api/adminAddressCollection/queryList',

@@ -49,6 +49,7 @@ export const parseTo = (num, point = 2) => {
     return parseFloat(sFloat)
 }
 
+
 export const parseWalletTo = (num, point = 2) => {
     const DECIMAL = process.env.VUE_APP_CHAIN_DECIMAL //精度
     let sFloat = formatDecimal((num / DECIMAL), point)
@@ -58,6 +59,17 @@ export const parseWalletTo = (num, point = 2) => {
 
 export const dateToTs = (date) => {
     return new Date(date).getTime();
+}
+
+export const tsToDate = (ts) => {
+    let date = new Date(parseInt(ts));    //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+    let Y = date.getFullYear() + '-';
+    let M = ((date.getMonth() + 1) < 10 ? '0' + (date.getMonth() + 1) : (date.getMonth() + 1)) + '-';
+    let D = (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) + ' ';
+    let h = (date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ':';
+    let m = (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()) + ':';
+    let s = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds()
+    return Y + M + D + h + m + s;
 }
 
 export const parseToThousandth = (num, point = 2) => {

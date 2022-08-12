@@ -45,7 +45,7 @@
                     <template #label>
 
                     </template>
-                    <span class="small-title">注册时间：</span>{{ toTime(params.createTime, 'yyyy-MM-dd HH:mm:ss') }}
+                    <span class="small-title">注册时间：</span>{{ tsToDate(params.createTime) }}
                   </el-descriptions-item>
                   <el-descriptions-item>
                     <template #label>
@@ -179,7 +179,7 @@
               <el-table-column label="创建时间" width="180">
                 <template #default="scope">
                   <div>
-                    <span style="">{{ toTime(scope.row.createTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                    <span style="">{{ tsToDate(scope.row.createTime) }}</span>
                   </div>
                 </template>
               </el-table-column>
@@ -280,7 +280,7 @@
               <el-table-column label="到账时间" width="180">
                 <template #default="scope">
                   <div>
-                    <span style="">{{ toTime(scope.row.modifiedTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                    <span style="">{{ tsToDate(scope.row.modifiedTime) }}</span>
                   </div>
                 </template>
               </el-table-column>
@@ -323,7 +323,7 @@
               <el-table-column label="创建时间" width="180">
                 <template #default="scope">
                   <div>
-                    <span style="">{{ toTime(scope.row.createTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                    <span style="">{{ tsToDate(scope.row.createTime) }}</span>
                   </div>
                 </template>
               </el-table-column>
@@ -386,7 +386,7 @@
               <el-table-column label="到账时间" width="180">
                 <template #default="scope">
                   <div>
-                    <span style="">{{ toTime(scope.row.completeTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                    <span style="">{{ tsToDate(scope.row.completeTime) }}</span>
                   </div>
                 </template>
               </el-table-column>
@@ -422,7 +422,7 @@
               <el-table-column label="创建时间" width="180">
                 <template #default="scope">
                   <div>
-                    <span style="">{{ toTime(scope.row.createTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                    <span style="">{{ tsToDate(scope.row.createTime) }}</span>
                   </div>
                 </template>
               </el-table-column>
@@ -484,7 +484,7 @@
               <el-table-column label="创建时间" width="180">
                 <template #default="scope">
                   <div>
-                    <span style="">{{ toTime(scope.row.createTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                    <span style="">{{ tsToDate(scope.row.createTime) }}</span>
                   </div>
                 </template>
               </el-table-column>
@@ -532,7 +532,7 @@
               <el-table-column label="创建时间" width="180">
                 <template #default="scope">
                   <div>
-                    <span style="">{{ toTime(scope.row.create_time, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                    <span style="">{{ tsToDate(scope.row.create_time) }}</span>
                   </div>
                 </template>
               </el-table-column>
@@ -593,7 +593,7 @@
               <el-table-column label="创建时间" width="180">
                 <template #default="scope">
                   <div>
-                    <span style="">{{ toTime(scope.row.create_time, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                    <span style="">{{ tsToDate(scope.row.create_time) }}</span>
                   </div>
                 </template>
               </el-table-column>
@@ -668,7 +668,7 @@
               <el-table-column label="创建时间" width="180">
                 <template #default="scope">
                   <div>
-                    <span style="">{{ toTime(scope.row.create_time, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                    <span style="">{{ tsToDate(scope.row.create_time) }}</span>
                   </div>
                 </template>
               </el-table-column>
@@ -751,7 +751,7 @@
               <el-table-column label="添加时间" width="180">
                 <template #default="scope">
                   <div>
-                    <span style="margin-right: 20px">{{ toTime(scope.row.createTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                    <span style="margin-right: 20px">{{ tsToDate(scope.row.createTime) }}</span>
                   </div>
                 </template>
               </el-table-column>
@@ -800,7 +800,7 @@
               <el-table-column label="添加时间" width="200">
                 <template #default="scope">
                   <div>
-                    <span style="margin-right: 20px">{{ toTime(scope.row.createTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                    <span style="margin-right: 20px">{{ tsToDate(scope.row.createTime) }}</span>
                   </div>
                 </template>
               </el-table-column>
@@ -818,45 +818,53 @@
         <div class="dialog-div" v-if="myIndex===11">
           <div>
             <el-table :data="static_data[myIndex].tableData" border>
-              <el-table-column label="园区">
+              <el-table-column label="收获地址ID">
                 <template #default="scope">
                   <div>
                     <span style="margin-right: 20px">{{ scope.row.id }}</span>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column label="园区">
+                <template #default="scope">
+                  <div>
+                    <span style="margin-right: 20px">{{ scope.row.parkId }}</span>
                   </div>
                 </template>
               </el-table-column>
               <el-table-column label="详细地址">
                 <template #default="scope">
                   <div>
-                    <span style="margin-right: 20px">{{ scope.row.id }}</span>
+                    <span style="margin-right: 20px">{{ scope.row.address }}</span>
                   </div>
                 </template>
               </el-table-column>
               <el-table-column label="收货手机号">
                 <template #default="scope">
                   <div>
-                    <span style="margin-right: 20px">{{ scope.row.id }}</span>
+                    <span style="margin-right: 20px">{{ scope.row.phone }}</span>
                   </div>
                 </template>
               </el-table-column>
               <el-table-column label="收货人">
                 <template #default="scope">
                   <div>
-                    <span style="margin-right: 20px">{{ scope.row.id }}</span>
+                    <span style="margin-right: 20px">{{ scope.row.name }}</span>
                   </div>
                 </template>
               </el-table-column>
               <el-table-column label="添加时间">
                 <template #default="scope">
                   <div>
-                    <span style="margin-right: 20px">{{ scope.row.id }}</span>
+                    <span style="margin-right: 20px">{{ scope.row.createTime }}</span>
                   </div>
                 </template>
               </el-table-column>
               <el-table-column label="是否默认">
                 <template #default="scope">
                   <div>
-                    <span style="margin-right: 20px">{{ scope.row.id }}</span>
+                    <span style="margin-right: 20px" v-if="scope.row.hasDefault===true">是</span>
+                    <span style="margin-right: 20px" v-else>否</span>
                   </div>
                 </template>
               </el-table-column>
@@ -893,7 +901,7 @@
 
 <script lang="ts" setup>
 import {reactive, ref} from "vue";
-import {dateToTs, format as toTime, parseTo, toClipboard} from "../../utils/public";
+import {dateToTs, format as toTime, parseTo, toClipboard, tsToDate} from "../../utils/public";
 import {ElMessage} from "element-plus";
 import * as service from '../../api/user'
 import * as funds from '../../api/funds'
@@ -1123,6 +1131,12 @@ const getAddressCollectionList = (param_) => {
     pagination.page_count = res.total
   })
 }
+const getUserAddressList = (param_) => {
+  funds.getUserAddressList(param_).then(res => {
+    static_data.value[myIndex.value].tableData = res.items
+    pagination.page_count = res.total
+  })
+}
 
 let myParams = {
   page: 1,
@@ -1159,6 +1173,9 @@ const dialogSwitch = (index) => {
   if (index === 10) {
     getAddressCollectionList(myParams)
   }
+  if (index === 11) {
+    getUserAddressList(myParams)
+  }
 }
 
 const openDialog = (index, data) => {
@@ -1174,8 +1191,8 @@ const onSubmit = (index) => {
   let start_time;
   let end_time;
   if (formInline.value.time != null && formInline.value.time.length === 2) {
-    start_time = toTime(dateToTs(formInline.value.time[0]), 'yyyy-MM-dd')
-    end_time = toTime(dateToTs(formInline.value.time[1]), 'yyyy-MM-dd')
+    start_time = dateToTs(formInline.value.time[0])
+    end_time = dateToTs(formInline.value.time[1])
     myParams.startTime = start_time
     myParams.endTime = end_time
   }

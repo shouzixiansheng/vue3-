@@ -34,7 +34,7 @@
           <el-table-column label="发送时间">
             <template #default="scope">
               <div>
-                <span style="">{{ toTime(scope.row.createTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                <span style="">{{ tsToDate(scope.row.createTime) }}</span>
               </div>
             </template>
           </el-table-column>
@@ -70,7 +70,7 @@
 
 <script lang="ts" setup>
 import {reactive, ref} from "vue";
-import {dateToTs, format as toTime, parseTo, toClipboard} from "../../utils/public";
+import {dateToTs, format as toTime, parseTo, toClipboard, tsToDate} from "../../utils/public";
 import * as service from '../../api/user'
 
 

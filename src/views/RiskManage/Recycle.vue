@@ -59,7 +59,7 @@
           <el-table-column label="归集时间" width="120">
             <template #default="scope">
               <div>
-                {{ toTime(dateToTs(scope.row.create_time), 'yyyy-MM-dd') }}
+                {{ tsToDate(scope.row.create_time) }}
               </div>
             </template>
           </el-table-column>
@@ -173,7 +173,7 @@
 
 <script lang="ts" setup>
 import {reactive, ref} from "vue";
-import {dateToTs, format as toTime, parseTo, toClipboard} from "../../utils/public";
+import {dateToTs, format as toTime, parseTo, toClipboard, tsToDate} from "../../utils/public";
 import * as service from '../../api/risk'
 
 const loading = ref(false)
@@ -229,8 +229,8 @@ const onSubmit = () => {
     size: 20
   }
   if (formInline.time != null && formInline.time.length === 2) {
-    start_time = toTime(dateToTs(formInline.time[0]), 'yyyy-MM-dd')
-    end_time = toTime(dateToTs(formInline.time[1]), 'yyyy-MM-dd')
+    start_time = dateToTs(formInline.time[0])
+    end_time = dateToTs(formInline.time[1])
     params.start_time = start_time
     params.end_time = end_time
   }

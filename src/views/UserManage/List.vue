@@ -53,7 +53,7 @@
         <el-table-column label="注册时间" width="180">
           <template #default="scope">
             <div>
-              <span style="">{{ toTime(scope.row.createTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
+              <span style="">{{ tsToDate(scope.row.createTime) }}</span>
             </div>
           </template>
         </el-table-column>
@@ -144,7 +144,7 @@
 
 <script lang="ts" setup>
 import { reactive, ref} from "vue";
-import {dateToTs, format as toTime, parseTo, toClipboard} from "../../utils/public";
+import {dateToTs, format as toTime, parseTo, toClipboard, tsToDate} from "../../utils/public";
 import * as service from '../../api/user'
 
 const formInline = reactive({
@@ -195,8 +195,8 @@ const onSubmit = () => {
   let start_time;
   let end_time;
   if (formInline.time != null && formInline.time.length === 2) {
-    start_time = toTime(dateToTs(formInline.time[0]), 'yyyy-MM-dd')
-    end_time = toTime(dateToTs(formInline.time[1]), 'yyyy-MM-dd')
+    start_time = dateToTs(formInline.time[0])
+    end_time = dateToTs(formInline.time[1])
     userParam.start_time = start_time
     userParam.end_time = end_time
   }

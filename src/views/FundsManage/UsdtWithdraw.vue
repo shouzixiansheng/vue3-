@@ -43,7 +43,7 @@
           </el-table-column>
           <el-table-column label="创建时间" width="160">
             <template #default="scope">
-              {{ toTime(dateToTs(scope.row.createTime), 'yyyy-MM-dd HH:mm:ss') }}
+              {{ tsToDate(scope.row.createTime) }}
             </template>
           </el-table-column>
           <el-table-column label="用户ID" width="150">
@@ -101,9 +101,9 @@
               <span class="">{{scope.row.hash}}</span>
             </template>
           </el-table-column>
-          <el-table-column label="到账时间" width="160">
+          <el-table-column label="到账时间" width="180">
             <template #default="scope">
-              <span v-if="scope.row.completeTime!==null">{{ toTime(dateToTs(scope.row.completeTime), 'yyyy-MM-dd HH:mm:ss') }}</span>
+              <span v-if="scope.row.completeTime!==null">{{ tsToDate(scope.row.completeTime) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="操作" width="140" fixed="right">
@@ -193,7 +193,7 @@
 </template>
 
 <script lang="ts" setup>
-import {dateToTs, format as toTime, parseTo} from "../../utils/public";
+import {dateToTs, format as toTime, parseTo, tsToDate} from "../../utils/public";
 import {reactive, ref} from "vue";
 import {ElMessage} from "element-plus";
 import * as service from '../../api/funds'
@@ -249,8 +249,8 @@ const onSubmit = () => {
     size: 20
   }
   if (formInline.time != null && formInline.time.length === 2) {
-    start_time = toTime(dateToTs(formInline.time[0]), 'yyyy-MM-dd')
-    end_time = toTime(dateToTs(formInline.time[1]), 'yyyy-MM-dd')
+    start_time = dateToTs(formInline.time[0])
+    end_time = dateToTs(formInline.time[1])
     params.startTime = start_time
     params.endTime = end_time
   }
